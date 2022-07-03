@@ -33,7 +33,7 @@ class RawObject:
         self.obj = {}
         self.childs = []
 
-    def print(self, mode: Literal[" yaml", "json"] = "json"):
+    def print(self, mode: Literal[" yaml", "json"] = "yaml"):
         data = self.as_dict()
         if mode == "json":
             print_json(data=data)
