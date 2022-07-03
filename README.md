@@ -2,9 +2,18 @@
 
 Python library to generate Kubernetes manifests
 
-
 [![PyPi](https://img.shields.io/pypi/v/kubekind.svg?style=flat-square)](https://pypi.python.org/pypi/kubekind)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/ambv/black)
+
+# Motivation
+
+Write manifests using Python code to improve readability and getting the benefits of IDEs IntelliSense features.
+
+
+<div align="center">
+  <img valign="middle" src="https://github.com/joaompinto/kubekind/raw/main/imgs/kubekind.png" />
+</div>
+
 
 # Requirements
 
