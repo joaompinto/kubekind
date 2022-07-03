@@ -17,7 +17,7 @@ Write manifests using Python code to improve readability and getting the benefit
 
 # Requirements
 
-- Python 3.9+
+- Python 3.9+ on Linux, Windows or Mac
 
 # Install
 ```sh
