@@ -1,7 +1,11 @@
 from collections import defaultdict
+from typing import Literal
 
+import yaml
 from attrs import define
+from rich import print as rich_print
 from rich import print_json
+from rich.syntax import Syntax
 
 
 class NotAllowedExecption(Exception):
@@ -29,8 +33,13 @@ class RawObject:
         self.obj = {}
         self.childs = []
 
-    def print(self):
-        print_json(data=self.as_dict())
+    def print(self, mode: Literal[" yaml", "json"] = "json"):
+        data = self.as_dict()
+        if mode == "json":
+            print_json(data=data)
+        else:
+            yaml_output = Syntax(yaml.dump(data, sort_keys=False), "yaml")
+            rich_print(yaml_output)
 
     def __enter__(self):
         if Stack.stack:
@@ -44,10 +53,32 @@ class RawObject:
     def __exit__(self, type, value, traceback):
         Stack.pop()
 
-    def add(self):
-        """add this object to the current context"""
-        Stack.tail().childs.append(self)
-        return self
+    def add(self, obj: object = None):
+        """
+        Add object
+
+        If is None add 'self' to the parent context manager object
+        Else add 'obj' as chidl to 'self'
+        """
+        if obj is None:
+            parent = Stack.tail()
+            parent.check_is_allowed_class(self)
+            parent.childs.append(self)
+            return self
+        else:
+            self.check_is_allowed_class(obj)
+            self.childs.append(obj)
+            obj.parent = self
+            return obj
+
+    def check_is_allowed_class(self, obj: object):
+        allowed_classes = getattr(self, "allowed_classes")
+        for cls in allowed_classes:
+            if isinstance(obj, cls):
+                return True
+        raise NotAllowedExecption(
+            f"'{obj.__class__.__name__}' not allowed in '{self.__class__.__name__}'"
+        )
 
 
 @define
@@ -70,17 +101,3 @@ class Kind(RawObject):
         if extra_dict:
             spec_dict = {"spec": dict(extra_dict)}
         return dict(obj, **spec_dict)
-
-    def check_is_allowed_spec(self, obj: object):
-        allowed_classes = getattr(self, "allowed_classes")
-        for cls in allowed_classes:
-            if isinstance(obj, cls):
-                return True
-        raise NotAllowedExecption(
-            f"'{obj.__class__.__name__}' not allowed in '{self.__class__.__name__}'"
-        )
-
-    def add(self, obj: object):
-        """add an object to the current object specs"""
-        self.check_is_allowed_spec(obj)
-        self.childs.append(obj)

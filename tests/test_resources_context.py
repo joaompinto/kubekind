@@ -22,3 +22,5 @@ def test_pod_def():
         container = Container("bash", "bash:latest").add()
         assert container.as_dict() == CONTAINER_EXPECTED_RESULT
     assert pod.as_dict() == POD_CONTAINER_EXPECTED_RESULT
+    pod.print("json")
+    pod.print("yaml")

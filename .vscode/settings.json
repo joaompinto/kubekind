@@ -6,7 +6,7 @@
         "build": true,
         "dist": true,
         ".pytest_cache": true,
-        "kuebkind/version.py": true
+        "kubekind/version.py": true
     },
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
