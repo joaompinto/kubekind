@@ -1,7 +1,6 @@
 from attrs import define
 
 from kubekind.kind import RawObject
-from kubekind.run import run_main
 
 
 @define
@@ -18,13 +17,5 @@ class Container(RawObject):
 
     name: str
     image: str
+    args: list[str] = []
     prefix_key = "containers"
-
-    def as_dict(self):
-        return {
-            "name": self.name,
-            "image": self.image,
-        }
-
-
-run_main(Container, __name__)

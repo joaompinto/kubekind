@@ -2,7 +2,7 @@ from collections import defaultdict
 from typing import Literal
 
 import yaml
-from attrs import define
+from attrs import NOTHING, define, fields
 from rich import print as rich_print
 from rich import print_json
 from rich.syntax import Syntax
@@ -13,6 +13,11 @@ class NotAllowedExecption(Exception):
 
 
 class Stack:
+    """
+    Stack singleton to keep track of context managers
+    Required the add(None) method
+    """
+
     stack = []
 
     @classmethod
@@ -79,6 +84,23 @@ class RawObject:
         raise NotAllowedExecption(
             f"'{obj.__class__.__name__}' not allowed in '{self.__class__.__name__}'"
         )
+
+    @property
+    def __members__(self):
+        member_dict = {}
+        for name in dir(self):
+            if "__" not in name:
+                member_dict[name] = getattr(self, name)
+        return member_dict
+
+    def as_dict(self) -> dict:
+        members = self.__members__
+        expose_dict = {}
+        for field in fields(self.__class__):
+            value = members[field.name]
+            if field.default is NOTHING or value:
+                expose_dict[field.name] = value
+        return expose_dict
 
 
 @define

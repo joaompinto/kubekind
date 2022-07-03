@@ -1,7 +1,6 @@
 from attrs import define
 
 from kubekind.kind import Kind
-from kubekind.run import run_main
 
 from .container import Container
 
@@ -20,6 +19,3 @@ class Pod(Kind):
     name: str
     apiVersion = "v1"
     allowed_classes = [Container]
-
-
-run_main(Pod, __name__)

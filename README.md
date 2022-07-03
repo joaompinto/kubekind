@@ -9,14 +9,19 @@ Python library to generate Kubernetes manifests
 # Install
 ```sh
 pip insall kubekind
- kubekind
 ```
-# Using
+# Generated a pod manifest
 ```python
+# test.py
 from kubekind import Pod, Container
 
 with Pod("my-pod") as pod:
-    Container("bash", "bash:latest").add()
+    Container("bash", "bash:latest", args=["sleep", "10000"]).add()
+    Container("bash_2", "bash:latest", args=["sleep", "10000"]).add()
 
 pod.print()
+```
+Apply the manifest
+```sh
+python test.py | kubectl apply -f -
 ```
