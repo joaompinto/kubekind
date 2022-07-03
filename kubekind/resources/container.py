@@ -11,6 +11,7 @@ class Container(RawObject):
     Args:
         name: Name of the container specified as a DNS_LABEL
         image: Container image name
+        args: Arguments to the entrypoint. The container image's CMD is used if this is not provided.
 
     Details: https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#Container
     """
