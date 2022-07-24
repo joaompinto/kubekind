@@ -1,6 +1,7 @@
 from attrs import define
 
 from kubekind.kind import RawObject
+from kubekind.storage.volumemount import volumeMount
 
 
 @define
@@ -20,3 +21,4 @@ class Container(RawObject):
     image: str
     args: list[str] = []
     prefix_key = "containers"
+    allowed_classes = [volumeMount]

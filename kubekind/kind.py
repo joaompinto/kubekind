@@ -34,11 +34,14 @@ class Stack:
 
 
 class RawObject:
-    def __init__(self):
+    def __attrs_post_init__(self):
         self.obj = {}
         self.childs = []
+        self.parent = None
+        if Stack.stack:
+            self.parent = Stack.tail()
 
-    def print(self, mode: Literal[" yaml", "json"] = "yaml"):
+    def print(self, mode: Literal["yaml", "json"] = "yaml"):
         data = self.as_dict()
         if mode == "json":
             print_json(data=data)
@@ -47,16 +50,15 @@ class RawObject:
             rich_print(yaml_output)
 
     def __enter__(self):
-        if Stack.stack:
-            parent = self.add()
-        else:
-            Stack.add(self)
-            parent = None
-        self.parent = parent
+        Stack.add(self)
+        if self.parent:
+            self.add()
+
         return self
 
     def __exit__(self, type, value, traceback):
-        Stack.pop()
+        if self.parent:
+            Stack.pop()
 
     def add(self, obj: object = None):
         """
@@ -66,9 +68,10 @@ class RawObject:
         Else add 'obj' as chidl to 'self'
         """
         if obj is None:
-            parent = Stack.tail()
+            parent = self.parent
             parent.check_is_allowed_class(self)
             parent.childs.append(self)
+            self.parent = parent
             return self
         else:
             self.check_is_allowed_class(obj)
@@ -96,30 +99,33 @@ class RawObject:
     def as_dict(self) -> dict:
         members = self.__members__
         expose_dict = {}
+        include_fields = getattr(self, "include_fields", [])
         for field in fields(self.__class__):
             value = members[field.name]
-            if field.default is NOTHING or value:
+            if field.name in include_fields or field.default is NOTHING or value:
                 expose_dict[field.name] = value
-        return expose_dict
+        extra_dict = defaultdict(list)
+        spec_classes = getattr(self, "allowed_classes", [])
+        for child in self.childs:
+            if child.__class__ in spec_classes:
+                extra_dict[child.prefix_key].append(child.as_dict())
+        return {**expose_dict, **extra_dict}
+
+
+class SimpleObject(RawObject):
+    def __attrs_post_init__(self):
+        super().__attrs_post_init__()
+        self.add()
 
 
 @define
 class Kind(RawObject):
-    def __attrs_pre_init__(self):
-        super().__init__()
-
     def as_dict(self):
         obj = {
             "kind": self.__class__.__name__,
             "apiVersion": self.apiVersion,
             "metadata": {"name": self.name},
         }
-        spec_classes = getattr(self, "allowed_classes", [])
-        extra_dict = defaultdict(list)
-        for child in self.childs:
-            if child.__class__ in spec_classes:
-                extra_dict[child.prefix_key].append(child.as_dict())
-        spec_dict = {}
-        if extra_dict:
-            spec_dict = {"spec": dict(extra_dict)}
-        return dict(obj, **spec_dict)
+        obj["spec"] = super().as_dict()
+        del obj["spec"]["name"]
+        return obj

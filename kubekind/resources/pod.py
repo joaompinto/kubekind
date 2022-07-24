@@ -1,6 +1,7 @@
 from attrs import define
 
 from kubekind.kind import Kind
+from kubekind.storage.emptydir import emptyDir
 
 from .container import Container
 
@@ -18,4 +19,4 @@ class Pod(Kind):
 
     name: str
     apiVersion = "v1"
-    allowed_classes = [Container]
+    allowed_classes = [Container, emptyDir]
